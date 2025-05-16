@@ -3,12 +3,14 @@
 ---
 
 ## PI Zero - Config
+```
 Username: CloudChasers
 Password: fpvDrone123
 
 SSID: CloudChasers
 Password: fpvDrone123
 Domain: drone or drone.local
+```
 
 ---
 ## TMUX
