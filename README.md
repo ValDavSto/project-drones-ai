@@ -24,3 +24,21 @@ tmux attach -t <process_name>
 ```bash
 tmux ls
 ```
+
+### Terminate session 
+#### (inside)
+```bash
+Ctrl + D
+```
+or
+```bash
+exit
+```
+#### (outside)
+```bash
+tmux kill-session -t <process_name>
+```
+Terminate all sessions
+```bash
+tmux kill-server
+```
