@@ -12,7 +12,13 @@ Password: fpvDrone123
 Domain: drone or drone.local
 ```
 
----
+## Pi-camera
+
+### Capture Picture
+```bash
+rpicam-still -o ./photo_name.jpg
+```
+
 ## TMUX
 
 ### New Session
