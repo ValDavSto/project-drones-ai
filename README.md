@@ -14,12 +14,35 @@ Domain: drone or drone.local
 
 ## Pi-camera
 
-### Capture Picture
+### Configuration:
+
+```bash
+sudo nano /boot/config.txt
+```
+
+```bash
+[all]
+camera_auto_detect=0
+dtoverlay=imx219
+start_x=1
+gpu_mem=128
+```
+
+```bash
+sudo reboot
+```
+
+### Capture Picture:
 ```bash
 rpicam-still -o ./photo_name.jpg
 ```
 
 ## TMUX
+
+### Install
+```bash
+sudo apt-get install tmux
+```
 
 ### New Session
 ```bash
