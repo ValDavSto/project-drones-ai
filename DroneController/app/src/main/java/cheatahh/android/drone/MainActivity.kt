@@ -1,12 +1,15 @@
 package cheatahh.android.drone
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import cheatahh.android.drone.network.getHotspotDevice
+import cheatahh.android.drone.receiver.addressAcknowledge
+import cheatahh.android.drone.receiver.addressSequence
 import cheatahh.android.drone.ui.theme.DroneControllerTheme
+import cheatahh.android.drone.ui.widgets.ReceiverDeviceSelector
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,7 +17,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DroneControllerTheme {
-                Text("Hello World")
+                ReceiverDeviceSelector(addressSequence(), { address -> getHotspotDevice(address, ::addressAcknowledge) }) { address ->
+                    startActivity(Intent(baseContext, ReceiverController::class.java).putExtra(ReceiverController.Intents.RECEIVER_ADDRESS, address.value))
+                }
             }
         }
     }
