@@ -7,7 +7,7 @@ A standard quadcopter (4-rotor drone) has four rotors, each consisting of:
 - A propeller
 - A mounting hub
 
-IMAGE: A diagram showing a quadcopter with labeled rotors, motors, and propellers.
+<img border-effect="rounded" src="rotor_labeled.png" alt="A photo showing a rotor, labeled with motor, mounting and propeller."/>
 
 The motor spins the propeller at high speeds, pushing air downwards and thereby creating lift through Newton’s Third Law (for every action, there's an equal and opposite reaction). 
 
@@ -23,9 +23,9 @@ Correct orientation matters - If a blade is mounted with the wrong orientation, 
 A correct orientation involves:
 
 - The leading edge (thicker, more angled part) faces the direction of rotation.
-- The curved surface of the blade faces up, and the flatter surface faces down (in standard setups).
+- The curved surface of the blade faces up, and the flatter surface faces down.
 
-IMAGE: A diagram showing a propeller with labeled leading edge, trailing edge, and airflow direction.
+<img border-effect="rounded" src="propeller_orientation.png" alt="A photo showing the correct and incorrect orientation of blades."/>
 
 ## Propeller Direction
 
@@ -34,7 +34,7 @@ To keep a drone stable and controllable in the air, neighboring pairs of rotors 
 - Two rotors spin clockwise (CW)
 - Two spin counterclockwise (CCW)
 
-IMAGE: A diagram showing a quadcopter with rotors labeled CW and CCW.
+<img border-effect="rounded" src="propeller_direction.png" alt="A photo showing a quadcopter with rotors labeled CW and CCW."/>
 
 When a motor spins a rotor, it exerts an opposite torque on the drone’s frame, 
 causing the body of the drone would spin in the opposite direction.
