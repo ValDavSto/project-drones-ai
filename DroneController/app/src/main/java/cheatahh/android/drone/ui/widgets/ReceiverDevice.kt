@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import cheatahh.android.drone.network.Address
 
 @Composable
-fun ReceiverDevice(address: Address, onSelect: (Address) -> Unit) {
+fun ReceiverDeviceOption(address: Address, onSelect: (Address) -> Unit) {
     Button(
         onClick = { onSelect(address) },
         modifier = Modifier
@@ -43,5 +43,5 @@ fun ReceiverDevice(address: Address, onSelect: (Address) -> Unit) {
 @Preview
 @Composable
 fun ReceiverDevicePreview() {
-    ReceiverDevice(Address("192.168.0.1")) {}
+    ReceiverDeviceOption(Address("192.168.0.1")) {}
 }

@@ -66,7 +66,7 @@ fun ReceiverDeviceSelector(addresses: AddressSequence, validateAddress: (Address
         )
         if (devices.isNotEmpty()) LazyColumn {
             items(devices) { address ->
-                ReceiverDevice(address, onSelect)
+                ReceiverDeviceOption(address, onSelect)
             }
         } else Text(
             text = "No receivers found.",

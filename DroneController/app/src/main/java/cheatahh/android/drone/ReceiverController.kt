@@ -4,38 +4,82 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.mutableIntStateOf
 import cheatahh.android.drone.ReceiverController.Intents.RECEIVER_ADDRESS
 import cheatahh.android.drone.network.Address
+import cheatahh.android.drone.receiver.Action
+import cheatahh.android.drone.receiver.RECEIVER_PORT
 import cheatahh.android.drone.ui.theme.DroneControllerTheme
+import cheatahh.android.drone.ui.widgets.ReceiverDeviceConnection
+import java.net.Socket
+import kotlin.concurrent.thread
 
 class ReceiverController : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+    private var socket: Socket? = null
+    private val socketState = mutableIntStateOf(1) // TODO set to 0
+    private val loadingState = mutableIntStateOf(0) // TODO set to 0
+
+    private fun disconnect() {
+        try {
+            socket?.close()
+        } catch (_: Exception) {}
+        socket = null
+        socketState.intValue = 0
+        loadingState.intValue = 0
+    }
+
+    private fun connect() {
+        disconnect()
         val address = Address(requireNotNull(intent.extras?.getString(RECEIVER_ADDRESS)))
-        setContent {
-            DroneControllerTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = address.value,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 24.sp
-                    )
-                }
+        try {
+            socket = Socket(address.value, RECEIVER_PORT)
+            socketState.intValue = 1
+            loadingState.intValue = 0
+        } catch (_: Exception) {
+            socketState.intValue = 2
+            loadingState.intValue = 0
+        }
+    }
+
+    private fun executeAction(action: Action) {
+        //val socket = socket ?: return
+        loadingState.intValue = 1
+        thread {
+            try {
+                Thread.sleep(1000)
+                //action.execute(socket)
+            } catch (_: Exception) {} finally {
+                loadingState.intValue = 0
             }
         }
     }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            DroneControllerTheme {
+                ReceiverDeviceConnection(socketState, loadingState, ::executeAction)
+            }
+        }
+        //thread { connect() }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        //thread { disconnect() }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        //thread { connect() }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //thread { disconnect() }
+    }
+
     object Intents {
         const val RECEIVER_ADDRESS = "receiverAddress"
     }
