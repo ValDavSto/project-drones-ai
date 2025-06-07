@@ -1,7 +1,10 @@
 import signal
 import socket
 import sys
-from enum import Enum
+import enum
+import gpiozero
+
+# [SECTION]: Communication
 
 def create_server(port: int) -> socket:
     """
@@ -60,17 +63,39 @@ def acknowledge_client(cli: socket) -> None:
     if not receive_bytes(cli, len(APPLICATION_ACK)) == APPLICATION_ACK:
         raise ConnectionError("Client did not acknowledge the application.")
 
-class Action(Enum):
+class Action(enum.Enum):
     """
     Enum for possible actions that can be requested by the client.
     """
-    PACKAGE_PICK = 0
-    PACKAGE_DROP = 1
+    DISCONNECT = 0
+    PACKAGE_PICK = 1
+    PACKAGE_DROP = 2
+
+# [SECTION]: Hardware
+
+def activate_magnet() -> None:
+    """
+    Activates the magnet for package handling.
+    """
+    print("Activating magnet...")
+    magnet.on()
+
+def deactivate_magnet() -> None:
+    """
+    Deactivates the magnet after package handling.
+    """
+    print("Deactivating magnet...")
+    magnet.off()
+
+# [SECTION]: Main
 
 # Server setup
 server = create_server(1337)
 signal.signal(signal.SIGINT, lambda signum, frame: close_server(server))   # CTRL+C
 signal.signal(signal.SIGTERM, lambda signum, frame: close_server(server))  # Termination
+
+# GPIO setup
+magnet = gpiozero.LED(23)
 
 # Main loop to accept and handle client connections
 while True:
@@ -80,13 +105,16 @@ while True:
         acknowledge_client(client)
         while True:
             match receive_bytes(client, 1)[0]:
+                case Action.DISCONNECT:
+                    print(f"[CMD from {clientAddress}] Disconnecting...")
+                    break
                 case Action.PACKAGE_PICK:
                     print(f"[CMD from {clientAddress}] Picking up package...")
-                    # TODO: Implement package pick logic
+                    activate_magnet()
                     pass
                 case Action.PACKAGE_DROP:
                     print(f"[CMD from {clientAddress}] Dropping off package...")
-                    # TODO: Implement package drop logic
+                    deactivate_magnet()
                     pass
                 case _:
                     raise ValueError("Unknown opcode received.")
