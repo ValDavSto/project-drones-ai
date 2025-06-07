@@ -7,4 +7,5 @@
                  start-page="CoralTPU.md">
 
     <toc-element topic="CoralTPU.md"/>
+    <toc-element topic="Rotors.md"/>
 </instance-profile>

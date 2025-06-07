@@ -1,4 +1,4 @@
-# Hardware
+# AI Hardware
 
 Deploying real-time object detection on a drone with on-board processing presents unique challenges due to constraints in size, 
 weight, power consumption, and processing capability. The hardware package must be able to receive video frames at a reasonable 

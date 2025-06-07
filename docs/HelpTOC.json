@@ -1,1 +1,1 @@
-{"entities":{"pages":{"CoralTPU":{"id":"CoralTPU","title":"Hardware","url":"coraltpu.html","level":0,"tabIndex":0}}},"topLevelIds":["CoralTPU"]}
+{"entities":{"pages":{"CoralTPU":{"id":"CoralTPU","title":"AI Hardware","url":"coraltpu.html","level":0,"tabIndex":0},"Rotors":{"id":"Rotors","title":"Rotors","url":"rotors.html","level":0,"tabIndex":1}}},"topLevelIds":["CoralTPU","Rotors"]}
