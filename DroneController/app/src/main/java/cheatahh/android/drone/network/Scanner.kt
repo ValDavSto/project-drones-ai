@@ -20,7 +20,7 @@ fun threadedAddressEnumerator(addresses: AddressSequence, validateAddress: (Addr
     try {
         addresses.forEachIndexed { i, address ->
             pool.execute {
-                val success = validateAddress(address) or true // TODO remove in production
+                val success = validateAddress(address)
                 onProgress(address, success, (i + 1) / addresses.count.toFloat())
             }
         }

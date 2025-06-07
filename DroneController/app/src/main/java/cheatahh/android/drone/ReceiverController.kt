@@ -1,6 +1,7 @@
 package cheatahh.android.drone
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,6 +10,7 @@ import cheatahh.android.drone.ReceiverController.Intents.RECEIVER_ADDRESS
 import cheatahh.android.drone.network.Address
 import cheatahh.android.drone.receiver.Action
 import cheatahh.android.drone.receiver.RECEIVER_PORT
+import cheatahh.android.drone.receiver.socketAcknowledge
 import cheatahh.android.drone.ui.theme.DroneControllerTheme
 import cheatahh.android.drone.ui.widgets.ReceiverDeviceConnection
 import java.net.Socket
@@ -16,8 +18,8 @@ import kotlin.concurrent.thread
 
 class ReceiverController : ComponentActivity() {
     private var socket: Socket? = null
-    private val socketState = mutableIntStateOf(1) // TODO set to 0
-    private val loadingState = mutableIntStateOf(0) // TODO set to 0
+    private val socketState = mutableIntStateOf(0)
+    private val loadingState = mutableIntStateOf(0)
 
     private fun disconnect() {
         try {
@@ -33,6 +35,7 @@ class ReceiverController : ComponentActivity() {
         val address = Address(requireNotNull(intent.extras?.getString(RECEIVER_ADDRESS)))
         try {
             socket = Socket(address.value, RECEIVER_PORT)
+            require(socketAcknowledge(socket!!))
             socketState.intValue = 1
             loadingState.intValue = 0
         } catch (_: Exception) {
@@ -42,14 +45,22 @@ class ReceiverController : ComponentActivity() {
     }
 
     private fun executeAction(action: Action) {
-        //val socket = socket ?: return
+        val socket = socket ?: return
         loadingState.intValue = 1
         thread {
             try {
-                Thread.sleep(1000)
-                //action.execute(socket)
+                action.execute(socket)
+                runOnUiThread {
+                    Toast.makeText(this@ReceiverController, "Command '${action.label}' sent.", Toast.LENGTH_SHORT).show()
+                }
             } catch (_: Exception) {} finally {
                 loadingState.intValue = 0
+                runOnUiThread {
+                    Toast.makeText(this@ReceiverController, "Command '${action.label}' failed.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            if(action == Action.DISCONNECT) runOnUiThread {
+                this@ReceiverController.finish()
             }
         }
     }
@@ -62,22 +73,22 @@ class ReceiverController : ComponentActivity() {
                 ReceiverDeviceConnection(socketState, loadingState, ::executeAction)
             }
         }
-        //thread { connect() }
+        thread { connect() }
     }
 
     override fun onPause() {
         super.onPause()
-        //thread { disconnect() }
+        thread { disconnect() }
     }
 
     override fun onResume() {
         super.onResume()
-        //thread { connect() }
+        thread { connect() }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        //thread { disconnect() }
+        thread { disconnect() }
     }
 
     object Intents {
