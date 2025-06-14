@@ -6,7 +6,7 @@
                  name="Drone Project"
                  start-page="CoralTPU.md">
 
-    <toc-element topic="Dorne-Manual.md"/>
     <toc-element topic="CoralTPU.md"/>
     <toc-element topic="Rotors.md"/>
+    <toc-element topic="Dorne-Manual.md"/>
 </instance-profile>
