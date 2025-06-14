@@ -17,9 +17,13 @@ Following are the components which are necessary to build and FPV drone:
   - With the camera a camera controller is shipped, but this is not necessary because the controls can be covered by the flight controller
 - **ELRS-Receiver | [SpeedyBee Nano 2.4G 2.4G-TCXO 915M ExpressLRS ELRS Receiver](https://www.speedybee.com/speedybee-nano-2-4g-2-4g-tcxo-915m-expresslrs-elrs-receiver/)**
   - Via this receiver the flight controller receives the inputs from the remote to control the drone
-  - The used protocol is ExpressLRS, which is open source. 
-- Remote
-  - The remote must have a software version installed which supports the protocol of the used receiver on the drone. In our case it has to support ExpressLRS
+  - The used protocol is ExpressLRS, which is open source.
+- **GPS Module: [HGLRC M100.5883 GPS](https://www.hglrc.com/products/m100-5883-gps?srsltid=AfmBOoq4Prd8-xOA7TuLEUwku7EqjJars7u9iBcFuTG9qOaUqb-IY-ut):**
+- **Remote | [Radiomaster Zorro](https://www.radiomasterrc.com/products/zorro-radio-controller):**
+  - The remote must have a software version installed which supports the protocol of the used receiver on the drone. 
+    In our case it has to support ExpressLRS.
+  - We flashed with [Buddy EdgeTx](https://buddy.edgetx.org/#/flash?version=v2.11.1&source=releases) the new software on the remote via USB-Connection. 
+    In the case of the *Zorro* the top USB port must be used.
 - Batterie pack
 - FPV-Googles
 
@@ -27,3 +31,5 @@ Following are the components which are necessary to build and FPV drone:
 The main part of the drone is the **Flight Controller (FC)** and **Motor Controller (MC)**
 stack. First the *SpeedyBee F405 AIO 40A Bluejay* was used which is a combination of FC and MC in one, but during the
 soldering of the drone a shortage damaged the FC.
+<img border-effect="rounded" src="soldering_fc.jpg" alt="Picture of soldering plan of the FC" />
+
