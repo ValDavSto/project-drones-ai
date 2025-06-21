@@ -9,12 +9,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import cheatahh.android.drone.ReceiverController.Intents.RECEIVER_ADDRESS
 import cheatahh.android.drone.network.Address
 import cheatahh.android.drone.receiver.Action
-import cheatahh.android.drone.receiver.RECEIVER_PORT
 import cheatahh.android.drone.receiver.socketAcknowledge
 import cheatahh.android.drone.ui.theme.DroneControllerTheme
 import cheatahh.android.drone.ui.widgets.ReceiverDeviceConnection
 import java.net.Socket
 import kotlin.concurrent.thread
+
+const val RECEIVER_PORT = 1337
 
 class ReceiverController : ComponentActivity() {
     private var socket: Socket? = null
@@ -53,11 +54,12 @@ class ReceiverController : ComponentActivity() {
                 runOnUiThread {
                     Toast.makeText(this@ReceiverController, "Command '${action.label}' sent.", Toast.LENGTH_SHORT).show()
                 }
-            } catch (_: Exception) {} finally {
-                loadingState.intValue = 0
+            } catch (_: Exception) {
                 runOnUiThread {
                     Toast.makeText(this@ReceiverController, "Command '${action.label}' failed.", Toast.LENGTH_SHORT).show()
                 }
+            } finally {
+                loadingState.intValue = 0
             }
             if(action == Action.DISCONNECT) runOnUiThread {
                 this@ReceiverController.finish()

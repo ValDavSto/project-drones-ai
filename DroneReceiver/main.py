@@ -3,6 +3,7 @@ import socket
 import sys
 import enum
 import gpiozero
+import time
 
 # [SECTION]: Communication
 
@@ -15,10 +16,9 @@ def create_server(port: int) -> socket:
         socket: The created and listening server socket.
     """
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    hostname = socket.gethostname()
-    print(f"Starting server on {hostname}:{port}")
-    srv.bind((hostname, port))
-    srv.listen(1)
+    print(f"Starting server on {port}")
+    srv.bind(('0.0.0.0', port))
+    srv.listen(5)
     return srv
 
 def close_server(srv: socket) -> None:
@@ -104,22 +104,21 @@ while True:
     try:
         acknowledge_client(client)
         while True:
-            match receive_bytes(client, 1)[0]:
-                case Action.DISCONNECT:
-                    print(f"[CMD from {clientAddress}] Disconnecting...")
-                    break
-                case Action.PACKAGE_PICK:
-                    print(f"[CMD from {clientAddress}] Picking up package...")
-                    activate_magnet()
-                    pass
-                case Action.PACKAGE_DROP:
-                    print(f"[CMD from {clientAddress}] Dropping off package...")
-                    deactivate_magnet()
-                    pass
-                case _:
-                    raise ValueError("Unknown opcode received.")
+            opcode = receive_bytes(client, 1)[0]
+            if opcode == Action.DISCONNECT.value:
+                print(f"[CMD from {clientAddress}] Disconnecting...")
+                break
+            elif opcode == Action.PACKAGE_PICK.value:
+                print(f"[CMD from {clientAddress}] Picking up package...")
+                activate_magnet()
+            elif opcode == Action.PACKAGE_DROP.value:
+                print(f"[CMD from {clientAddress}] Dropping off package...")
+                deactivate_magnet()
+            else:
+                raise ValueError(f"Unknown opcode {opcode} received.")
     except Exception as error:
         print(error)
-        print(f"Connection to {clientAddress} has been closed.")
     finally:
+        print(f"Connection to {clientAddress} has been closed.")
+        time.sleep(1)
         client.close()
