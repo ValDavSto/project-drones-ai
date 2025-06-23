@@ -34,6 +34,10 @@ sudo reboot
 
 ### Capture Picture:
 ```bash
+libcamera-still -o photo_name.jpg
+```
+or
+```bash
 rpicam-still -o ./photo_name.jpg
 ```
 
