@@ -36,12 +36,13 @@ class ReceiverController : ComponentActivity() {
         val address = Address(requireNotNull(intent.extras?.getString(RECEIVER_ADDRESS)))
         try {
             socket = Socket(address.value, RECEIVER_PORT)
+            //socket!!.oobInline = true
             require(socketAcknowledge(socket!!))
             socketState.intValue = 1
             loadingState.intValue = 0
         } catch (_: Exception) {
+            disconnect()
             socketState.intValue = 2
-            loadingState.intValue = 0
         }
     }
 
@@ -50,7 +51,7 @@ class ReceiverController : ComponentActivity() {
         loadingState.intValue = 1
         thread {
             try {
-                action.execute(socket)
+                action(socket)
                 runOnUiThread {
                     Toast.makeText(this@ReceiverController, "Command '${action.label}' sent.", Toast.LENGTH_SHORT).show()
                 }
@@ -75,16 +76,6 @@ class ReceiverController : ComponentActivity() {
                 ReceiverDeviceConnection(socketState, loadingState, ::executeAction)
             }
         }
-        thread { connect() }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        thread { disconnect() }
-    }
-
-    override fun onResume() {
-        super.onResume()
         thread { connect() }
     }
 
