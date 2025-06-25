@@ -28,7 +28,7 @@ Following are the components which are necessary to build and FPV drone:
   - The GPS module tracks the drone's location. This is not necessary for the AI features to work, but it is helpful for features such as locating the drone if it gets lost.
 - **Remote | [Radiomaster Zorro](https://www.radiomasterrc.com/products/zorro-radio-controller):**
   - The remote must have a software version installed which supports the protocol of the used receiver on the drone. 
-    In our case it has to support ExpressLRS.
+    In our case, it has to support ExpressLRS.
   - We flashed with [Buddy EdgeTx](https://buddy.edgetx.org/#/flash?version=v2.11.1&source=releases) the new software on the remote via USB-Connection. 
     In the case of the *Zorro* the top USB port must be used.
 - **Battery Pack | [Tattu 650mAh 4S1P 75C 14,8V Lipo-Battery pack](https://gensace.de/de/products/tattu-650mah-4s1p-75c-14-8v-lipo-battery-pack-with-xt30-plug)**
