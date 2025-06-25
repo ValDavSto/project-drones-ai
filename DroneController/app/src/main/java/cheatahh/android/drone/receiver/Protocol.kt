@@ -6,7 +6,10 @@ import java.net.Socket
 private const val APPLICATION_ACK = "DroneUAS"
 
 fun addressAcknowledge(address: Address) = Socket(address.value, 1337).use { socket ->
-    socketAcknowledge(socket)
+    //socket.oobInline = true
+    val result = socketAcknowledge(socket)
+    if(result) Action.DISCONNECT(socket)
+    result
 }
 
 fun socketAcknowledge(socket: Socket) : Boolean {
