@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from picamera2 import Picamera2
 from tflite_runtime.interpreter import Interpreter, load_delegate
+import messages
 
 model_path = "models/tf2_mobilenet_v3_edgetpu_1.0_224_ptq_edgetpu.tflite"
 label_path = "models/imagenet_labels.txt"
@@ -48,8 +49,10 @@ try:
         if confidence > 0.5:
             label = labels.get(class_id, "Unknown")
             print(f"Recognized: {label} with probability of {confidence:.2f}")
+            messages.sendMessage(f"Recognized: {label} with probability of {confidence:.2f}")
         else:
             print("Nothing recognized with high confidence.")
+            messages.sendMessage("Nothing recognized with high confidence.")
 
         time.sleep(0.5)
 
