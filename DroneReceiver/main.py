@@ -1,6 +1,7 @@
-import signal
 import sys
+import time
 import enum
+import signal
 import gpiozero
 import threading
 from socket import socket, AF_INET, SOCK_STREAM
@@ -19,7 +20,7 @@ def create_server(hostname: str, port: int) -> socket:
     srv = socket(AF_INET, SOCK_STREAM)
     print(f"Starting server on {port}")
     srv.bind((hostname, port))
-    srv.listen(1)
+    srv.listen(2)
     return srv
 
 def close_servers(srv: list[socket]) -> None:
@@ -132,24 +133,23 @@ while True:
         acknowledge_client(client)
         loop = threading.Thread(target=localMessageLoop, args = (client,), daemon=True).start()
         while True:
-            match receive_bytes(client, 1)[0]:
-                case Action.DISCONNECT:
-                    print(f"[CMD from {clientAddress}] Disconnecting...")
-                    break
-                case Action.PACKAGE_PICK:
-                    print(f"[CMD from {clientAddress}] Picking up package...")
-                    activate_magnet()
-                    pass
-                case Action.PACKAGE_DROP:
-                    print(f"[CMD from {clientAddress}] Dropping off package...")
-                    deactivate_magnet()
-                    pass
-                case _:
-                    raise ValueError("Unknown opcode received.")
+            opcode = receive_bytes(client, 1)[0]
+            if opcode == Action.DISCONNECT.value:
+                print(f"[CMD from {clientAddress}] Disconnecting...")
+                break
+            elif opcode == Action.PACKAGE_PICK.value:
+                print(f"[CMD from {clientAddress}] Picking up package...")
+                activate_magnet()
+            elif opcode == Action.PACKAGE_DROP.value:
+                print(f"[CMD from {clientAddress}] Dropping off package...")
+                deactivate_magnet()
+            else:
+                raise ValueError(f"Unknown opcode {opcode} received.")
     except Exception as error:
         print(error)
-        print(f"Connection to {clientAddress} has been closed.")
     finally:
+        print(f"Connection to {clientAddress} has been closed.")
+        time.sleep(1)
         client.close()
         local.close()
         if loop:
