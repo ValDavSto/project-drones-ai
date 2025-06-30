@@ -65,5 +65,29 @@ class MSP:
         aux_channels = all_channels[4:8]
         return aux_channels
 
+    def send_flight_control(self, roll, pitch, yaw, throttle):
+        """
+        Send only flight data for remote control of the drone
+        """
+        def clamp(val): return max(1000, min(2000, val))
+
+        # read existing AUX data
+        try:
+            current_channels = self.read_rc()
+            aux = current_channels[4:8]
+        except Exception as e:
+            print("Error reading AUX values:", e)
+            aux = [1000] * 4  # neutral value if communication with FC failed
+
+        rc_values = [
+            clamp(roll),
+            clamp(pitch),
+            clamp(yaw),
+            clamp(throttle),
+            *aux
+        ]
+        self.send_rc(rc_values)
+
+
     def close(self):
         self.ser.close()
