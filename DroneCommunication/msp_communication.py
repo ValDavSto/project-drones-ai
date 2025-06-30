@@ -2,71 +2,68 @@ import serial
 import struct
 import time
 
-MSP_API_V1_START = b'$M<'
-MSP_API_V1_REQUEST = b'$M<'
-MSP_API_V1_RESPONSE = b'$M>'
+class MSP:
+    MSP_HEADER = b"$M<"
+    MSP_RESPONSE = b"$M>"
+    MSP_SET_RAW_RC = 200
+    MSP_RC = 105
 
-MSP_RC = 105  # MSP command for RC channel data
+    def __init__(self, port="/dev/serial0", baudrate=115200):
+        self.ser = serial.Serial(port, baudrate, timeout=1)
+        time.sleep(2)  # Warte auf FC-Verbindung
 
-# MSPv1 message builder
-def build_msp_request(command):
-    payload_size = 0
-    payload = b''
-    checksum = payload_size ^ command
+    def _build_message(self, command, payload=b''):
+        size = len(payload)
+        checksum = size ^ command
+        for b in payload:
+            checksum ^= b
+        return self.MSP_HEADER + bytes([size]) + bytes([command]) + payload + bytes([checksum])
 
-    return (
-        MSP_API_V1_REQUEST +
-        bytes([payload_size]) +
-        bytes([command]) +
-        bytes([checksum])
-    )
+    def _read_response(self):
+        header = self.ser.read(3)
+        if header != self.MSP_RESPONSE:
+            raise Exception("Invalid response header")
 
-# MSPv1 response parser
-def parse_msp_response(data):
-    if not data.startswith(MSP_API_V1_RESPONSE):
-        print("Invalid header")
-        return None
+        size = self.ser.read(1)[0]
+        cmd = self.ser.read(1)[0]
+        payload = self.ser.read(size)
+        checksum = self.ser.read(1)
 
-    size = data[3]
-    cmd = data[4]
-    payload = data[5:5 + size]
+        return cmd, payload
 
-    if cmd == MSP_RC:
-        # Each channel is 2 bytes (little endian uint16), 16 channels
-        channels = struct.unpack('<16H', payload)
+    def send_rc(self, channels):
+        """
+        channels: list of 8 integers (Roll, Pitch, Yaw, Throttle, AUX1–4)
+        """
+        if len(channels) != 8:
+            raise ValueError("Must provide exactly 8 channels")
+        payload = struct.pack("<8H", *channels)
+        msg = self._build_message(self.MSP_SET_RAW_RC, payload)
+        self.ser.write(msg)
+
+    def read_rc(self):
+        """
+        Returns: list of 16 integers (all RC channels, including AUX)
+        """
+        msg = self._build_message(self.MSP_RC)
+        self.ser.write(msg)
+
+        cmd, payload = self._read_response()
+        if cmd != self.MSP_RC:
+            raise Exception(f"Unexpected MSP command in response: {cmd}")
+        if len(payload) < 16 * 2:
+            raise Exception("Payload too short")
+
+        channels = struct.unpack("<16H", payload[:32])
         return channels
 
-    return None
+    def read_aux_channels(self):
+        """
+        Returns only the AUX channels (channels 5–8, index 4–7)
+        """
+        all_channels = self.read_rc()
+        aux_channels = all_channels[4:8]
+        return aux_channels
 
-def read_aux_channels(serial_port='COM5', baudrate=115200):
-    with serial.Serial(serial_port, baudrate, timeout=2) as ser:
-        print("Sending MSP_RC request...")
-        ser.write(build_msp_request(MSP_RC))
-        time.sleep(0.1)
-
-        header = ser.read(3)
-        if header != MSP_API_V1_RESPONSE:
-            print("Invalid response header")
-            return
-
-        size = ser.read(1)
-        cmd = ser.read(1)
-        size_val = size[0]
-        cmd_val = cmd[0]
-
-        payload = ser.read(size_val)
-        checksum = ser.read(1)
-
-        full_response = header + size + cmd + payload + checksum
-
-        channels = parse_msp_response(full_response)
-        if channels:
-            print("RC Channels:", channels)
-            print("AUX1-4:", channels[4])  # Channels 5–8 (index 4–7) are AUX1–4
-        else:
-            print("Failed to parse response")
-
-if __name__ == "__main__":
-    while True:
-        read_aux_channels()
-        time.sleep(2)
+    def close(self):
+        self.ser.close()
