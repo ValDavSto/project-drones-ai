@@ -10,7 +10,7 @@ class MSP:
 
     def __init__(self, port="/dev/serial0", baudrate=115200):
         self.ser = serial.Serial(port, baudrate, timeout=1)
-        time.sleep(2)  # Warte auf FC-Verbindung
+        time.sleep(2)  # Wait for connection to FC
 
     def _build_message(self, command, payload=b''):
         size = len(payload)
