@@ -8,7 +8,7 @@ class MSP:
     MSP_SET_RAW_RC = 200
     MSP_RC = 105
 
-    def __init__(self, port="/dev/serial0", baudrate=115200):
+    def __init__(self, port="COM5", baudrate=115200):
         self.ser = serial.Serial(port, baudrate, timeout=1)
         time.sleep(2)  # Wait for connection to FC
 
@@ -40,6 +40,12 @@ class MSP:
         payload = struct.pack("<8H", *channels)
         msg = self._build_message(self.MSP_SET_RAW_RC, payload)
         self.ser.write(msg)
+
+
+        try:
+            self._read_response()
+        except Exception as e:
+            print("Warning: Response from Betaflight couldn't be processed correctly:", e)
 
     def read_rc(self):
         """
