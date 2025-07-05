@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import time
 
+MIN_CONTOUR_AREA = 500
+
 picam2 = Picamera2()
 picam2.configure(picam2.create_still_configuration())
 picam2.start()
@@ -27,7 +29,7 @@ try:
         found_red = False
         for cnt in contours:
             area = cv2.contourArea(cnt)
-            if area > 500:
+            if area > MIN_CONTOUR_AREA:
                 found_red = True
                 break
 

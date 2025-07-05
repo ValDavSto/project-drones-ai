@@ -8,6 +8,8 @@ import messages
 model_path = "models/tf2_mobilenet_v3_edgetpu_1.0_224_ptq_edgetpu.tflite"
 label_path = "models/imagenet_labels.txt"
 
+CONFIDENCE_THRESHOLD = 0.5
+
 labels = {}
 with open(label_path, 'r') as f:
     for i, line in enumerate(f):
@@ -46,7 +48,7 @@ try:
         class_id = int(top_k[0])
         confidence = output_data[class_id] / 255.0 if output_data[class_id] > 1 else output_data[class_id]
 
-        if confidence > 0.5:
+        if confidence > CONFIDENCE_THRESHOLD:
             label = labels.get(class_id, "Unknown")
             print(f"Recognized: {label} with probability of {confidence:.2f}")
             messages.sendMessage(f"Recognized: {label} with probability of {confidence:.2f}")
