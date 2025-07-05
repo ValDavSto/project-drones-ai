@@ -13,14 +13,14 @@ try:
         frame = picam2.capture_array()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        lower_red1 = np.array([0, 50, 40])
-        upper_red1 = np.array([350, 50, 40])
-        lower_red2 = np.array([170, 120, 70])
-        upper_red2 = np.array([180, 255, 255])
+        lower_red1 = np.array([0, 100, 100])
+        upper_red1 = np.array([10, 255, 255])
+        lower_red2 = np.array([160, 100, 100])
+        upper_red2 = np.array([179, 255, 255])
 
         mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
         mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
-        mask = mask1 | mask2
+        mask = cv2.bitwise_or(mask1, mask2)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -32,9 +32,9 @@ try:
                 break
 
         if found_red:
-            print("🔴 Red object detected!")
+            print("Red object detected!")
         else:
-            print("⚪️ No red object detected.")
+            print("No red object detected.")
 
         time.sleep(1)
 
@@ -43,3 +43,4 @@ except KeyboardInterrupt:
 
 finally:
     picam2.stop()
+

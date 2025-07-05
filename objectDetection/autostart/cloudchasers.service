@@ -1,0 +1,12 @@
+[Unit]
+Description=CloudChasers Object Detection Script
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/CloudChasers/objectDetection/main.py
+WorkingDirectory=/home/CloudChasers/objectDetection
+User=CloudChasers
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
