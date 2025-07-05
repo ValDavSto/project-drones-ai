@@ -1,6 +1,7 @@
-from socket import socket, AF_INET, SOCK_STREAM
+import socket
+from typing import Union
 
-s: socket | None = None
+s: Union[socket.socket, None] = None
 
 def getOrConnectLocalSocket(hostname: str = "127.0.0.1", port: int = 4242) -> socket:
     """
@@ -13,7 +14,7 @@ def getOrConnectLocalSocket(hostname: str = "127.0.0.1", port: int = 4242) -> so
     """
     global s
     if not s:
-        s = socket(AF_INET, SOCK_STREAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((hostname, port))
     return s
 

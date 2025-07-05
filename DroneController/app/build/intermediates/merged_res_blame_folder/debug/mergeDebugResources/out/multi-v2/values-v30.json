@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "cheatahh.android.DroneController.app-mergeDebugResources-2:/values-v30/values-v30.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Timon\\.gradle\\caches\\8.11.1\\transforms\\ea25f5f7e953a03e19ecbd4a795e4f56\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "72",
+                        "endOffsets": "123"
+                    }
+                }
+            ]
+        }
+    ]
+}
