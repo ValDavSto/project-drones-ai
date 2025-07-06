@@ -1,5 +1,6 @@
 from msp_communication import MSP
 import time
+import gpiozero
 
 def stable_flight(msp, throttle=1300):
     msp.send_flight_control(1500, 1500, throttle, 1500)
@@ -14,10 +15,10 @@ def turn_right(msp, throttle=1300):
     msp.send_flight_control(1500, 1500, throttle, 1550)
 
 def main():
+    magnet = gpiozero.LED(23)
     msp = MSP(port="COM5")
     check_stable = True
     check_forward = True
-    drop = False
 
     try:
         print("Start -  wait for MSP Override")
@@ -58,12 +59,12 @@ def main():
             # check aux5 for picking up packet
             if aux5 >= 1900:
                 print("magnet on")
-                drop = False  # turn on magnet
+                magnet.on()
 
             # check aux6 for dropping packet
             if aux6 >= 1900:
                 print("magnet off")
-                drop = True # turn off magnet
+                magnet.off()
 
 
             throttle_before = throttle
