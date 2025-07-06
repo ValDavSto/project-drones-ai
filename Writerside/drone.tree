@@ -10,4 +10,6 @@
     <toc-element topic="CoralTPU.md"/>
     <toc-element topic="Rotors.md"/>
     <toc-element topic="Package-Transportation.md"/>
+    <toc-element topic="PiAsCoPilot.md"/>
+    <toc-element topic="BetaflightSetup.md"/>
 </instance-profile>
