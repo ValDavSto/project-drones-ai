@@ -6,4 +6,8 @@
         <accepts>page.html</accepts>
     </rule>
     -->
+    <rule id="5d1ada0">
+        <description>Created after removal of "Camera" from Drone Project</description>
+        <accepts>test-1.html</accepts>
+    </rule>
 </rules>
