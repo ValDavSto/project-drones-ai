@@ -15,7 +15,7 @@ import cheatahh.android.drone.ui.theme.Grey40
 @Composable
 fun ReceiverDeviceConnectionAction(isLoading: Boolean, action: Action, onAction: (Action) -> Unit) {
     Button(
-        onClick = { onAction(Action.PACKAGE_DROP) },
+        onClick = { onAction(action) },
         modifier = Modifier.fillMaxWidth(0.5f),
         colors = ButtonColors(
             MaterialTheme.colorScheme.primary,
