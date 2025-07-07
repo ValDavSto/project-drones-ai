@@ -7,7 +7,7 @@ frame rate, process them in real-time, and optimally send the results back to th
 For our purposes, we are using a `2.5-inch` `FlyFish Velociraptor` drone frame, which is already quite compact and has no dedicated space 
 for additional hardware besides flight related components. As the usage of larger single-board computers (SBCs) is not feasible due to 
 space constraints, our choice fell on the 32-bit `Raspberry Pi Zero W 1.1`. Why not the later revision `Raspberry Pi Zero W 2` with 64-bit support? 
-Well, we didn't have any in stock. - Update: We got our hands on a  `Raspberry Pi Zero W 2`, so we are using this instead.
+Well, we didn't have any in stock.
 
 However, a single-board computer of this size, especially the Pi Zero, is limited in computational power. This makes it insufficient for running 
 complex machine learning models, particularly those required for real-time object detection using camera input.
@@ -98,7 +98,7 @@ Ara macao (Scarlet Macaw): 0.75781
 ```
 
 Our measured initial first inference time of `129.8ms` is quite high, which is likely caused by us using the `USB 2.0` interface of 
-the `Raspberry Pi Zero`, instead of the `3.0` standard recommended by Coral.
+the `Raspberry Pi Zero W`, instead of the `3.0` standard recommended by Coral.
 
 Note: The `Coral USB Accelerator` has no means of communicating its functionality besides a white LED on the device, where a continuous
 light means a passive state, while a blinking light indicates an active state. The proper way of knowing if the device is working is by

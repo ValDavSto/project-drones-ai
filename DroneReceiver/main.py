@@ -1,40 +1,33 @@
-import sys
-import time
-import enum
 import signal
+import socket
+import sys
+import enum
 import gpiozero
-import threading
-from socket import socket, AF_INET, SOCK_STREAM
 
 # [SECTION]: Communication
 
-def create_server(hostname: str, port: int) -> socket:
+def create_server(port: int) -> socket:
     """
     Creates a TCP server socket, binds it to the hostname and port, and starts listening.
     Args:
-        hostname (int): The hostname on which the server should listen.
         port (int): The port on which the server should listen.
     Returns:
         socket: The created and listening server socket.
     """
-    srv = socket(AF_INET, SOCK_STREAM)
-    print(f"Starting server on {port}")
+    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    hostname = socket.gethostname()
+    print(f"Starting server on {hostname}:{port}")
     srv.bind((hostname, port))
-    srv.listen(2)
+    srv.listen(1)
     return srv
 
-def close_servers(srv: list[socket]) -> None:
+def close_server(srv: socket) -> None:
     """
     Closes the given server socket and terminates the program.
     Args:
         srv (socket): The server socket to close.
     """
-    for s in srv:
-        # noinspection PyBroadException
-        try:
-            s.close()
-        except Exception:
-            pass
+    srv.close()
     print("Server closed.")
     sys.exit(0)
 
@@ -97,60 +90,36 @@ def deactivate_magnet() -> None:
 # [SECTION]: Main
 
 # Server setup
-server = create_server(hostname = "0.0.0.0", port = 1337)
-local = create_server(hostname = "127.0.0.1", port = 4242)
-signal.signal(signal.SIGINT, lambda signum, frame: close_servers([server, local]))   # CTRL+C
-signal.signal(signal.SIGTERM, lambda signum, frame: close_servers([server, local]))  # Termination
+server = create_server(1337)
+signal.signal(signal.SIGINT, lambda signum, frame: close_server(server))   # CTRL+C
+signal.signal(signal.SIGTERM, lambda signum, frame: close_server(server))  # Termination
 
 # GPIO setup
 magnet = gpiozero.LED(23)
 
-def localMessageLoop(pipe: socket):
-    """
-    Pipe from local to global
-    """
-    try:
-        while True:
-            localClient, localClientAddress = local.accept()
-            print(f"Local connection from {localClientAddress} has been established.")
-            try:
-                while True:
-                    pipe.sendall(receive_bytes(localClient, 1))
-            except Exception as localError:
-                print(localError)
-                print(f"Local Connection to {localClientAddress} has been closed.")
-            finally:
-                localClient.close()
-    except ConnectionError:
-        pass
-
 # Main loop to accept and handle client connections
 while True:
     client, clientAddress = server.accept()
-    loop: threading.Thread | None = None
     print(f"Connection from {clientAddress} has been established.")
     try:
         acknowledge_client(client)
-        loop = threading.Thread(target=localMessageLoop, args = (client,), daemon=True).start()
         while True:
-            opcode = receive_bytes(client, 1)[0]
-            if opcode == Action.DISCONNECT.value:
-                print(f"[CMD from {clientAddress}] Disconnecting...")
-                break
-            elif opcode == Action.PACKAGE_PICK.value:
-                print(f"[CMD from {clientAddress}] Picking up package...")
-                activate_magnet()
-            elif opcode == Action.PACKAGE_DROP.value:
-                print(f"[CMD from {clientAddress}] Dropping off package...")
-                deactivate_magnet()
-            else:
-                raise ValueError(f"Unknown opcode {opcode} received.")
+            match receive_bytes(client, 1)[0]:
+                case Action.DISCONNECT:
+                    print(f"[CMD from {clientAddress}] Disconnecting...")
+                    break
+                case Action.PACKAGE_PICK:
+                    print(f"[CMD from {clientAddress}] Picking up package...")
+                    activate_magnet()
+                    pass
+                case Action.PACKAGE_DROP:
+                    print(f"[CMD from {clientAddress}] Dropping off package...")
+                    deactivate_magnet()
+                    pass
+                case _:
+                    raise ValueError("Unknown opcode received.")
     except Exception as error:
         print(error)
-    finally:
         print(f"Connection to {clientAddress} has been closed.")
-        time.sleep(1)
+    finally:
         client.close()
-        local.close()
-        if loop:
-            loop.join()

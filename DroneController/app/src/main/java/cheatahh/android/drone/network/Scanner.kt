@@ -1,6 +1,5 @@
 package cheatahh.android.drone.network
 
-import android.util.Log
 import java.net.InetAddress
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -22,7 +21,6 @@ fun threadedAddressEnumerator(addresses: AddressSequence, validateAddress: (Addr
         addresses.forEachIndexed { i, address ->
             pool.execute {
                 val success = validateAddress(address)
-                Log.d("PING", "Target address $address responded with $success")
                 onProgress(address, success, (i + 1) / addresses.count.toFloat())
             }
         }

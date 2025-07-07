@@ -12,10 +12,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,58 +24,42 @@ import androidx.compose.ui.unit.sp
 import cheatahh.android.drone.receiver.Action
 
 @Composable
-fun ReceiverDeviceConnection(connectionState: MutableIntState, loadingState: MutableIntState, messageState: MutableState<String>, onAction: (Action) -> Unit) {
+fun ReceiverDeviceConnection(connectionState: MutableIntState, loadingState: MutableIntState, onAction: (Action) -> Unit) {
     val connection by remember { connectionState }
     val isLoading by remember { loadingState }
-    val message by remember { messageState }
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column {
-                Text(
-                    text = when (connection) {
-                        0 -> "Connecting..."
-                        1 -> "Connected"
-                        else -> "Error"
-                    },
-                    color = when (connection) {
-                        0, 1 -> MaterialTheme.colorScheme.primary
-                        else -> MaterialTheme.colorScheme.error
-                    },
-                    fontSize = 24.sp,
-                    modifier = Modifier.fillMaxWidth(0.5f),
-                    textAlign = TextAlign.Center
-                )
-                if (isLoading != 0) LinearProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
-                        .height(2.dp)
-                )
-                if (connection == 1) Column(
-                    modifier = Modifier.padding(top = if (isLoading != 0) 8.dp else 10.dp)
-                ) {
-                    for (action in Action.entries) ReceiverDeviceConnectionAction(
-                        isLoading != 0,
-                        action,
-                        onAction
-                    )
-                }
+        Column {
+            Text(
+                text = when(connection) {
+                    0 -> "Connecting..."
+                    1 -> "Connected"
+                    else -> "Error"
+                },
+                color = when(connection) {
+                    0, 1 -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.error
+                },
+                fontSize = 24.sp,
+                modifier = Modifier.fillMaxWidth(0.5f),
+                textAlign = TextAlign.Center
+            )
+            if(isLoading != 0)LinearProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .height(2.dp)
+            )
+            if(connection == 1) Column(
+                modifier = Modifier.padding(top = if(isLoading != 0) 8.dp else 10.dp)
+            ) {
+                for(action in Action.entries) ReceiverDeviceConnectionAction(isLoading != 0, action, onAction)
             }
         }
-        Text(
-            text = message,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(32.dp),
-            fontSize = 20.sp,
-            color = MaterialTheme.colorScheme.tertiary
-        )
     }
 }
 
@@ -87,6 +69,5 @@ fun ReceiverDeviceConnection(connectionState: MutableIntState, loadingState: Mut
 fun ReceiverDeviceConnectionPreview() {
     val connected = mutableIntStateOf(1)
     val isLoading = mutableIntStateOf(1)
-    val message = mutableStateOf("Hello World")
-    ReceiverDeviceConnection(connected, isLoading, message) {}
+    ReceiverDeviceConnection(connected, isLoading) {}
 }
