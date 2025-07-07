@@ -1,65 +1,103 @@
 # Pi as Co-Pilot
 
-This topic explains how we use a Raspberry Pi to control the drone either alongside or independently of the pilot.  
-The Pi communicates with the Betaflight flight controller using the MSP (MultiWii Serial Protocol) over a UART interface.
+This section describes how we utilize a Raspberry Pi Zero 2W as an intelligent co-pilot for our drone system. The Raspberry Pi communicates with the Betaflight flight controller using the MultiWii Serial Protocol (MSP) over a UART interface. This setup enables semi-autonomous flight behavior while maintaining full compatibility with manual pilot inputs.
 
 ---
 
 ## Overview
 
-The Raspberry Pi acts as a co-pilot that sends flight commands and receives telemetry from the flight controller.  
-It operates in two distinct modes, determined by the `MSP OVERRIDE` switch position in Betaflight:
+The Raspberry Pi serves as an auxiliary flight control unit that interacts with the main flight controller. It sends RC commands and reads telemetry data using MSP over a serial interface. Depending on the flight mode selected via the Betaflight AUX3 channel, the Pi executes different behaviors.
 
-- **Stable Mode (AUX3: 1300–1700)** – The Pi sends input values that keep the drone flying in a stable, level position.
-- **Object Detection Mode (AUX3: 1800–2100)** – The Pi moves the drone forward slightly. It uses object detection to identify colors:
-  - If a **red object** is detected, the drone turns slightly **left**
-  - If a **blue object** is detected, the drone turns slightly **right**
+There are two main operational modes:
 
-> See [](BetaflightSetup.md) for how the `MSP OVERRIDE` mode is configured.
+- **Stable Hover Mode** (`AUX3: 1300–1700`):  
+  In this mode, the Pi takes over the control sticks to maintain a level and stable hover. It continuously sends neutral control values to keep the drone steady.
 
----
+- **Object Detection Mode** (`AUX3: 1800–2100`):  
+  The Pi initiates forward motion and simultaneously performs object detection. Based on the detected object's color, it steers the drone:
+  - **Red object** → slight turn to the **left**
+  - **Blue object** → slight turn to the **right**
 
-## Hardware Connection
-
-Connect the Raspberry Pi to the flight controller via a UART interface:
-
-- **Pi TX** → **FC RX** (e.g., UART3)  
-- **Pi RX** → **FC TX**
-
-> For details on powering the Raspberry Pi safely from the drone, see [](Power-Supply.md).
+> For configuration details, refer to [](BetaflightSetup.md), which explains how to enable MSP Override mode.
 
 ---
 
-## Software
+## Hardware Setup
 
-We use a Python program on the Raspberry Pi to interact with the drone via the **MSP protocol** (MultiWii Serial Protocol). The Pi communicates directly with the flight controller over a UART connection and sends flight control commands like roll, pitch, yaw, and throttle.
+To establish communication between the Raspberry Pi and the flight controller, connect the two devices via a UART interface:
 
-### Behavior Overview
+- **Raspberry Pi TX** → **Flight Controller RX** (e.g., UART3)
+- **Raspberry Pi RX** → **Flight Controller TX**
 
-The program continuously reads the drone's **AUX channels** to decide what to do:
+Ensure the Pi is properly powered from the drone's power system.
 
-- **AUX3** controls the flight behavior:
-  - **< 1400**: MSP Override is off – the Pi does nothing.
-  - **1400–1900**: Stable hover mode – the Pi keeps the drone in position.
-  - **> 1900**: Object detection mode – the Pi moves the drone forward slightly, and reacts to detected objects.
+> See [](Power-Supply.md) for information on safely powering the Raspberry Pi.
 
-- **AUX5** activates the magnet (e.g., to pick up a payload).
-- **AUX6** deactivates the magnet (e.g., to drop a payload).
+---
 
-All flight commands are sent via a custom `MSP` class, which uses the serial port to exchange MSP messages with the flight controller. The Pi sends new RC values and also reads existing channel values, to combine its flight input with the AUX values set by the pilot.
+## Software Architecture
 
-> See more to Package Transportation here: [](Package-Transportation.md)
+A custom Python script runs on the Raspberry Pi to handle MSP communication. This script acts as a bridge between the Pi and the Betaflight flight controller, issuing control commands and reading telemetry over a serial connection.
 
-> The full MSP protocol implementation is written in Python and handles packet formatting, communication over UART, and RC channel synchronization.
+### Operational Behavior
 
-### MSP Communication Class
+The core logic revolves around continuously monitoring the AUX channels to determine the Pi's control behavior:
 
-The custom `MSP` class provides methods to:
+- **AUX3** (Mode Selector):
+  - **< 1400**: MSP Override is off – the Pi remains inactive.
+  - **1400–1900**: Stable mode – the Pi maintains the drone’s current position.
+  - **> 1900**: Object detection mode – the Pi commands forward motion and reacts to visual input.
 
-- Send RC data to the flight controller (`send_rc`)
-- Read all current RC channels (`read_rc`)
-- Send flight input (roll, pitch, yaw, throttle) while preserving AUX values (`send_flight_control`)
+- **AUX5**: Activates the magnet (e.g., to pick up a package).
+- **AUX6**: Deactivates the magnet (e.g., to release a package).
 
-It handles packet formatting according to the MSP protocol and runs over a serial UART interface (e.g., `/dev/serial0` or `COM5`). The protocol uses a binary message format with checksums to ensure reliable communication.
+All control logic is managed through a custom `MSP` class, which sends and receives MSP messages over the serial connection. This class allows us to inject RC commands while preserving the pilot's AUX settings.
 
-This allows the Raspberry Pi to behave as an auxiliary flight control unit, without interfering with pilot input unless MSP Override is enabled.
+> For further information on payload delivery, refer to [](Package-Transportation.md).
+
+> The MSP implementation in Python includes full support for packet formatting, UART communication, and RC channel synchronization.
+
+---
+
+## MSP Communication Module
+
+The `MSP` class abstracts the protocol details and provides high-level methods for:
+
+- **Sending RC input** (`send_rc`)
+- **Reading current RC channel values** (`read_rc`)
+- **Sending flight control commands** with pitch, roll, yaw, and throttle inputs while maintaining AUX values (`send_flight_control`)
+
+This module encodes MSP packets with proper binary formatting and checksum validation to ensure robust communication. It typically operates over `/dev/serial0` (Linux) or `COMx` ports (Windows).
+
+Through this abstraction, the Raspberry Pi can behave like a secondary flight controller that only overrides inputs when allowed by the MSP Override switch.
+
+---
+
+## Co-Pilot Flight Logic
+
+### Stable Mode
+
+When the `AUX3` channel reads between `1400` and `1900`, the Pi activates its "Stable Mode." In this state, the Pi keeps the drone level by sending neutral RC inputs:
+
+`roll = 1500`
+
+`pitch = 1500`
+
+`yaw = 1500`  
+
+`throttle = (last known throttle from pilot)`
+
+This allows the drone to maintain its attitude, assuming it was already stable at the time of mode activation. The Pi does not attempt to recover unstable motion — it simply holds the current attitude using balanced control inputs.
+
+### Object Detection and Forward Movement
+
+When `AUX3` exceeds `1900`, the Pi enters "Object Detection Mode." It adjusts the drone’s behavior as follows:
+
+- Increases throttle slightly (adds `+50` to the last known throttle input).
+- Tilts the drone forward by setting **pitch = 1600**.
+- Uses onboard image recognition to scan for colored objects:
+  - If a **red object** is detected → **yaw = 1450** (turn left)
+  - If a **blue object** is detected → **yaw = 1550** (turn right)
+  - If no object is detected → **yaw = 1500** (no turn)
+
+> Important: Avoid switching directly from the lowest AUX3 value (Off Mode) to the highest (Object Detection Mode). Always pass through Stable Mode to ensure smooth transition and stable flight behavior.
