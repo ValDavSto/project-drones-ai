@@ -10,4 +10,8 @@
         <description>Created after removal of "Camera" from Drone Project</description>
         <accepts>test-1.html</accepts>
     </rule>
+    <rule id="348e0b31">
+        <description>Created after removal of "Hardware" from Drone Project</description>
+        <accepts>Hardware.html</accepts>
+    </rule>
 </rules>

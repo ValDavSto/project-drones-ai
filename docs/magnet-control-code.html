@@ -1,0 +1,66 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html lang="en-US" data-preset="contrast" data-primary-color="#307FFF"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="robots" content="noindex"><meta name="built-on" content="2025-07-07T23:26:04.2712241"><title>Remote Magnet Control via TCP (Raspberry Pi) | Drone Project</title><script type="application/json" id="virtual-toc-data">[{"id":"libaries","level":0,"title":"Libaries","anchor":"#libaries"},{"id":"logging-startup","level":0,"title":"Logging Startup","anchor":"#logging-startup"},{"id":"tcp-server-setup","level":0,"title":"TCP Server Setup","anchor":"#tcp-server-setup"},{"id":"graceful-shutdown","level":0,"title":"Graceful Shutdown","anchor":"#graceful-shutdown"},{"id":"client-communication-handling","level":0,"title":"Client Communication Handling","anchor":"#client-communication-handling"},{"id":"action-commands","level":0,"title":"Action Commands","anchor":"#action-commands"},{"id":"gpio-control","level":0,"title":"GPIO Control","anchor":"#gpio-control"},{"id":"local-communication-bridge","level":0,"title":"Local Communication Bridge","anchor":"#local-communication-bridge"},{"id":"main-control-loop","level":0,"title":"Main Control Loop","anchor":"#main-control-loop"}]</script><script type="application/json" id="topic-shortcuts"></script><link href="https://resources.jetbrains.com/writerside/apidoc/6.22.0-b776/app.css" rel="stylesheet"><meta name="msapplication-TileColor" content="#000000"><link rel="apple-touch-icon" sizes="180x180" href="https://jetbrains.com/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="https://jetbrains.com/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="https://jetbrains.com/favicon-16x16.png"><meta name="msapplication-TileImage" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-144x144.png"><meta name="msapplication-square70x70logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-70x70.png"><meta name="msapplication-square150x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-150x150.png"><meta name="msapplication-wide310x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x150.png"><meta name="msapplication-square310x310logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x310.png"><meta name="image" content=""><!-- Open Graph --><meta property="og:title" content="Remote Magnet Control via TCP (Raspberry Pi) | Drone Project"><meta property="og:description" content=""><meta property="og:image" content=""><meta property="og:site_name" content="Drone Project Help"><meta property="og:type" content="website"><meta property="og:locale" content="en_US"><meta property="og:url" content="writerside-documentation/magnet-control-code.html"><!-- End Open Graph --><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content=""><meta name="twitter:title" content="Remote Magnet Control via TCP (Raspberry Pi) | Drone Project"><meta name="twitter:description" content=""><meta name="twitter:creator" content=""><meta name="twitter:image:src" content=""><!-- End Twitter Card --><!-- Schema.org WebPage --><script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "@id": "writerside-documentation/magnet-control-code.html#webpage",
+    "url": "writerside-documentation/magnet-control-code.html",
+    "name": "Remote Magnet Control via TCP (Raspberry Pi) | Drone Project",
+    "description": "",
+    "image": "",
+    "inLanguage":"en-US"
+}</script><!-- End Schema.org --><!-- Schema.org WebSite --><script type="application/ld+json">{
+    "@type": "WebSite",
+    "@id": "writerside-documentation/#website",
+    "url": "writerside-documentation/",
+    "name": "Drone Project Help"
+}</script><!-- End Schema.org --></head><body data-id="Magnet-Control-Code" data-main-title="Remote Magnet Control via TCP (Raspberry Pi)" data-article-props="{&quot;seeAlsoStyle&quot;:&quot;links&quot;}" data-template="article" data-breadcrumbs=""><div class="wrapper"><main class="panel _main"><header class="panel__header"><div class="container"><h3>Drone Project  Help</h3><div class="panel-trigger"></div></div></header><section class="panel__content"><div class="container"><article class="article" data-shortcut-switcher="inactive"><h1 data-toc="Magnet-Control-Code" id="Magnet-Control-Code.md">Remote Magnet Control via TCP (Raspberry Pi)</h1><p id="-pjys0m_3">This Python script sets up a TCP server to receive commands from remote clients. It listens for instructions to activate or deactivate a magnet (via GPIO pin), used e.g. for package pickup/drop-off. It supports graceful shutdown and includes a local-to-global communication bridge.</p><section class="chapter"><h2 id="libaries" data-toc="libaries">Libaries</h2><div class="code-block" data-lang="python">
+import sys
+import time
+import enum
+import signal
+import gpiozero
+import threading
+from socket import socket, AF_INET, SOCK_STREAM
+import datetime
+</div><ul class="list _bullet" id="-pjys0m_14"><li class="list__item" id="-pjys0m_16"><p id="-pjys0m_22"><span class="control" id="-pjys0m_23">sys, time, datetime:</span> Core system functions, delays, and timestamp logging.</p></li><li class="list__item" id="-pjys0m_17"><p id="-pjys0m_24"><span class="control" id="-pjys0m_25">enum:</span> Defines action types for client commands.</p></li><li class="list__item" id="-pjys0m_18"><p id="-pjys0m_26"><span class="control" id="-pjys0m_27">signal:</span> Handles system signals for graceful exit.</p></li><li class="list__item" id="-pjys0m_19"><p id="-pjys0m_28"><span class="control" id="-pjys0m_29">gpiozero:</span> Simplified GPIO control (here: magnet on GPIO 23).</p></li><li class="list__item" id="-pjys0m_20"><p id="-pjys0m_30"><span class="control" id="-pjys0m_31">threading:</span> Used for managing parallel communication (local &harr; global).</p></li><li class="list__item" id="-pjys0m_21"><p id="-pjys0m_32"><span class="control" id="-pjys0m_33">socket:</span> Manages TCP communication.</p></li></ul></section><section class="chapter"><h2 id="logging-startup" data-toc="logging-startup">Logging Startup</h2><div class="code-block" data-lang="python">
+with open(&quot;/home/CloudChasers/objectDetection/logs/autostart_log.txt&quot;, &quot;a&quot;) as f:
+    f.write(f&quot;Script gestartet um {datetime.datetime.now()}\n&quot;)
+</div><ul class="list _bullet" id="-pjys0m_35"><li class="list__item" id="-pjys0m_37"><p id="-pjys0m_38">Logs script startup time for diagnostics.</p></li></ul></section><section class="chapter"><h2 id="tcp-server-setup" data-toc="tcp-server-setup">TCP Server Setup</h2><div class="code-block" data-lang="python">
+def create_server(hostname: str, port: int) -&gt; socket:
+    ...
+</div><ul class="list _bullet" id="-pjys0m_40"><li class="list__item" id="-pjys0m_43"><p id="-pjys0m_45">Creates a TCP server bound to the specified hostname and port.</p></li><li class="list__item" id="-pjys0m_44"><p id="-pjys0m_46">Starts listening for incoming connections.</p></li></ul><div class="code-block" data-lang="python">
+server = create_server(&quot;0.0.0.0&quot;, 1337)
+local  = create_server(&quot;127.0.0.1&quot;, 4242)
+</div><ul class="list _bullet" id="-pjys0m_42"><li class="list__item" id="-pjys0m_47"><p id="-pjys0m_49"><span class="control" id="-pjys0m_50">server:</span> Global client access (e.g. drone command).</p></li><li class="list__item" id="-pjys0m_48"><p id="-pjys0m_51"><span class="control" id="-pjys0m_52">local:</span> Internal/local communication (optional submodule).</p></li></ul></section><section class="chapter"><h2 id="graceful-shutdown" data-toc="graceful-shutdown">Graceful Shutdown</h2><div class="code-block" data-lang="python">
+signal.signal(signal.SIGINT, lambda ..., ...: close_servers([server, local]))
+signal.signal(signal.SIGTERM, lambda ..., ...: close_servers([server, local]))
+</div><ul class="list _bullet" id="-pjys0m_54"><li class="list__item" id="-pjys0m_57"><p id="-pjys0m_58">Handles CTRL+C or system termination to cleanly shut down sockets and exit.</p></li></ul><div class="code-block" data-lang="python">
+def close_servers(srv: list[socket]) -&gt; None:
+    ...
+</div><ul class="list _bullet" id="-pjys0m_56"><li class="list__item" id="-pjys0m_59"><p id="-pjys0m_60">Closes all open server sockets and exits the script.</p></li></ul></section><section class="chapter"><h2 id="client-communication-handling" data-toc="client-communication-handling">Client Communication Handling</h2><div class="code-block" data-lang="python">
+def receive_bytes(cli: socket, n: int) -&gt; bytes:
+    ...
+</div><ul class="list _bullet" id="-pjys0m_62"><li class="list__item" id="-pjys0m_65"><p id="-pjys0m_67">Receives exactly n bytes from a socket connection.</p></li><li class="list__item" id="-pjys0m_66"><p id="-pjys0m_68">Raises an error if the connection breaks mid-transmission.</p></li></ul><div class="code-block" data-lang="python">
+def acknowledge_client(cli: socket) -&gt; None:
+    ...
+</div><ul class="list _bullet" id="-pjys0m_64"><li class="list__item" id="-pjys0m_69"><p id="-pjys0m_70">Sends a handshake message (&quot;DroneUAS&quot;) and expects acknowledgment back from the client.</p></li></ul></section><section class="chapter"><h2 id="action-commands" data-toc="action-commands">Action Commands</h2><div class="code-block" data-lang="python">
+class Action(enum.Enum):
+    DISCONNECT = 0
+    PACKAGE_PICK = 1
+    PACKAGE_DROP = 2
+</div><ul class="list _bullet" id="-pjys0m_72"><li class="list__item" id="-pjys0m_74"><p id="-pjys0m_75">Defines valid commands the server can interpret:</p></li></ul><ol class="list _decimal" id="-pjys0m_73" type="1"><li class="list__item" id="-pjys0m_76"><p id="-pjys0m_79">Disconnect</p></li><li class="list__item" id="-pjys0m_77"><p id="-pjys0m_80">Activate magnet (pick)</p></li><li class="list__item" id="-pjys0m_78"><p id="-pjys0m_81">Deactivate magnet (drop)</p></li></ol></section><section class="chapter"><h2 id="gpio-control" data-toc="gpio-control">GPIO Control</h2><div class="code-block" data-lang="python">
+magnet = gpiozero.LED(23)
+</div><ul class="list _bullet" id="-pjys0m_83"><li class="list__item" id="-pjys0m_86"><p id="-pjys0m_87">Sets up GPIO pin 23 as digital output to control the magnet.</p></li></ul><div class="code-block" data-lang="python">
+def activate_magnet():
+    magnet.on()
+
+def deactivate_magnet():
+    magnet.off()
+</div><ul class="list _bullet" id="-pjys0m_85"><li class="list__item" id="-pjys0m_88"><p id="-pjys0m_89">Turns the magnet on/off for physical package handling.</p></li></ul></section><section class="chapter"><h2 id="local-communication-bridge" data-toc="local-communication-bridge">Local Communication Bridge</h2><div class="code-block" data-lang="python">
+def localMessageLoop(pipe: socket):
+    ...
+</div><ul class="list _bullet" id="-pjys0m_91"><li class="list__item" id="-pjys0m_92"><p id="-pjys0m_94">Accepts connections on the local port (127.0.0.1:4242) and forwards all received messages to the main client socket.</p></li><li class="list__item" id="-pjys0m_93"><p id="-pjys0m_95">Runs in a background thread.</p></li></ul></section><section class="chapter"><h2 id="main-control-loop" data-toc="main-control-loop">Main Control Loop</h2><div class="code-block" data-lang="python">
+while True:
+    client, clientAddress = server.accept()
+    ...
+</div><ul class="list _bullet" id="-pjys0m_97"><li class="list__item" id="-pjys0m_98"><p id="-pjys0m_102">Waits for incoming client connections.</p></li><li class="list__item" id="-pjys0m_99"><p id="-pjys0m_103">After successful handshake, spawns the localMessageLoop as a thread.</p></li><li class="list__item" id="-pjys0m_100"><p id="-pjys0m_104">Processes incoming commands one byte at a time:</p></li><li class="list__item" id="-pjys0m_101"><p id="-pjys0m_105">Disconnect (0): Ends session.</p><ul class="list _bullet" id="-pjys0m_106"><li class="list__item" id="-pjys0m_107"><p id="-pjys0m_110">Package Pick (1): Activates magnet.</p></li><li class="list__item" id="-pjys0m_108"><p id="-pjys0m_111">Package Drop (2): Deactivates magnet.</p></li><li class="list__item" id="-pjys0m_109"><p id="-pjys0m_112">Unknown codes raise an error.</p></li></ul></li></ul></section><div class="last-modified">07 Juli 2025</div><div data-feedback-placeholder="true"></div><div class="navigation-links _bottom"><a href="package-transportation.html" class="navigation-links__prev">Package Transportation</a><a href="piascopilot.html" class="navigation-links__next">Pi as Co-Pilot</a></div></article><div id="disqus_thread"></div></div></section></main></div><script src="https://resources.jetbrains.com/writerside/apidoc/6.22.0-b776/app.js"></script></body></html>
