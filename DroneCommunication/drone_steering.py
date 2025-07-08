@@ -31,12 +31,12 @@ def main():
             throttle = rc[3]
 
             # check aux3 for msp override
-            if aux3 < 1400:
+            if aux3 < 1300:
                 print("MSP Override off - no steering \t ", throttle)
                 check_stable = True
                 check_forward = True
 
-            elif 1400 <= aux3 < 1900:
+            elif 1300 <= aux3 < 1800:
                 print("stable flight \t\t\t\t\t ", throttle)
                 if check_stable:
                     stable_flight(msp, throttle_before)
@@ -47,7 +47,7 @@ def main():
                 else:
                     stable_flight(msp, throttle)
 
-            elif aux3 >= 1900:
+            elif aux3 >= 1800:
                 print("flying forward \t\t\t\t\t ", throttle)
                 if check_forward:
                     forward_flight(msp, throttle + 50)
@@ -57,7 +57,7 @@ def main():
 
 
             # check aux5 for picking up packet
-            if aux5 >= 1900:
+            if aux5 >= 1800:
                 print("magnet on")
                 magnet.on()
 

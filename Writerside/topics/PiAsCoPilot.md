@@ -10,7 +10,7 @@ The Raspberry Pi serves as an auxiliary flight control unit that interacts with 
 
 There are two main operational modes:
 
-- **Stable Hover Mode** (`AUX3: 1300–1700`):  
+- **Stable Hover Mode** (`AUX3: 1300–1800`):  
   In this mode, the Pi takes over the control sticks to maintain a level and stable hover. It continuously sends neutral control values to keep the drone steady.
 
 - **Object Detection Mode** (`AUX3: 1800–2100`):  
@@ -44,9 +44,9 @@ A custom Python script runs on the Raspberry Pi to handle MSP communication. Thi
 The core logic revolves around continuously monitoring the AUX channels to determine the Pi's control behavior:
 
 - **AUX3** (Mode Selector):
-  - **< 1400**: MSP Override is off – the Pi remains inactive.
-  - **1400–1900**: Stable mode – the Pi maintains the drone’s current position.
-  - **> 1900**: Object detection mode – the Pi commands forward motion and reacts to visual input.
+  - **< 1300**: MSP Override is off – the Pi remains inactive.
+  - **1300–1800**: Stable mode – the Pi maintains the drone’s current position.
+  - **> 1800**: Object detection mode – the Pi commands forward motion and reacts to visual input.
 
 - **AUX5**: Activates the magnet (e.g., to pick up a package).
 - **AUX6**: Deactivates the magnet (e.g., to release a package).
