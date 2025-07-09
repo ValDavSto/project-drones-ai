@@ -20,4 +20,5 @@
         <toc-element topic="Object-Detection-Code.md"/>
         <toc-element topic="Camera.md"/>
     </toc-element>
+    <toc-element topic="Future-Work.md"/>
 </instance-profile>

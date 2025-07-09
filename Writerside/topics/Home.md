@@ -11,6 +11,7 @@ Taking over the world with drones and AI.
 7. [](Package-Transportation.md)
 8. [](Magnet-Control-Code.md)
 9. [](Autostart.md)
+10. [](Future-Work.md)
 
 <img border-effect="rounded" src="poster.png" alt="Project poster."/>
 
