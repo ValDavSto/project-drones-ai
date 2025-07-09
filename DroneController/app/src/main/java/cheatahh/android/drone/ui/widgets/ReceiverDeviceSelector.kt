@@ -1,6 +1,8 @@
 package cheatahh.android.drone.ui.widgets
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,7 +27,57 @@ import androidx.compose.ui.unit.dp
 import cheatahh.android.drone.network.Address
 import cheatahh.android.drone.network.AddressSequence
 import cheatahh.android.drone.network.threadedAddressEnumerator
+import cheatahh.android.drone.network.threadedBluetoothEnumerator
 import kotlin.concurrent.thread
+
+@Composable
+fun ReceiverBluetoothDeviceSelector(context: Context, validateDevice: (BluetoothDevice) -> Boolean, onSelect: (BluetoothDevice) -> Unit) {
+    var progress by remember { mutableFloatStateOf(0f) }
+    val devices = remember { mutableStateListOf<BluetoothDevice>().apply stream@ {
+        thread {
+            threadedBluetoothEnumerator(context, validateDevice,
+                { address, success, current ->
+                    if (success) this@stream += address
+                    progress = maxOf(progress, current)
+                }, {}
+            )
+        }
+    } }
+    Column(
+        modifier = Modifier
+            .padding(start = 30.dp, top = 60.dp, end = 30.dp, bottom = 30.dp)
+            .fillMaxWidth(1f)
+    ) {
+        Text(
+            text = "Select Receiver${if (devices.isEmpty()) "" else " (${devices.size})"}",
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(bottom = 3.dp),
+            fontSize = TextUnit(8f, TextUnitType.Em)
+        )
+        LinearProgressIndicator(
+            progress = { progress },
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .height(2.dp)
+        )
+        if (devices.isNotEmpty()) LazyColumn {
+            items(devices) { device ->
+                ReceiverBluetoothDeviceOption(device, onSelect)
+            }
+        } else Text(
+            text = "No receivers found.",
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(top = 10.dp)
+        )
+    }
+}
 
 @Composable
 fun ReceiverDeviceSelector(addresses: AddressSequence, validateAddress: (Address) -> Boolean, onSelect: (Address) -> Unit) {
