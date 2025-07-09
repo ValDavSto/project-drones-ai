@@ -1,0 +1,12 @@
+[Unit]
+Description=Starts Receiver (app)
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/CloudChasers/autostart/main.py
+WorkingDirectory=/home/CloudChasers/autostart
+User=CloudChasers
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

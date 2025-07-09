@@ -1,0 +1,15 @@
+[Unit]
+Description=Starts Bluetooth Receiver (app)
+After=bluetooth.service
+Requires=bluetooth.service
+
+[Service]
+ExecStart=/usr/bin/python3 /home/CloudChasers/autostart/main_ble.py
+Restart=on-failure
+User=CloudChasers
+WorkingDirectory=/home/CloudChasers/autostart
+StandardOutput=append:/home/CloudChasers/autostart/logs/systemd_stdout.log
+StandardError=append:/home/CloudChasers/autostart/logs/systemd_stderr.log
+
+[Install]
+WantedBy=multi-user.target
