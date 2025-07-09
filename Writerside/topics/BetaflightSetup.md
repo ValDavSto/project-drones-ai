@@ -10,11 +10,18 @@ Connect your drone’s flight controller to your PC using a USB cable. Then open
 
 Go to the **Ports** tab and configure the ports as follows:
 
+> **Important:** The shown configurations can change depending on the used FC. 
+
 - **USB VCP**: Configuration/MSP — enabled  
+  - This is usually automatically enabled. It is necessary for the FC to communicate via the USB-C port
 - **UART1**: Peripherals — VTX (IRC Tramp)  
+  - VTX needs to be enabled for the video transmission, the correct protocol version is important
 - **UART2**: Serial RX — enabled  
-- **UART3** & **UART4**: Configuration/MSP — enabled  
+  - The ELRS receiver is connected to UART2
+- **UART3** & **UART4**: Configuration/MSP — enabled
+  - UART3 needs to be enabled for the MSP communication with the Raspberry Pi
 - **UART6**: Sensor Input — GPS (baud rate: 576000)
+  - Only necessary if a GPS modul is connected
 
 <img border-effect="rounded" src="Betaflight_Ports_1.png" alt="Betaflight Ports Configuration"/>
 
