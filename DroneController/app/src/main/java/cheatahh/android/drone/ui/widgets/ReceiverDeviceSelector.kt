@@ -2,7 +2,9 @@ package cheatahh.android.drone.ui.widgets
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,22 +29,14 @@ import androidx.compose.ui.unit.dp
 import cheatahh.android.drone.network.Address
 import cheatahh.android.drone.network.AddressSequence
 import cheatahh.android.drone.network.threadedAddressEnumerator
-import cheatahh.android.drone.network.threadedBluetoothEnumerator
 import kotlin.concurrent.thread
 
+@SuppressLint("MissingPermission")
 @Composable
-fun ReceiverBluetoothDeviceSelector(context: Context, validateDevice: (BluetoothDevice) -> Boolean, onSelect: (BluetoothDevice) -> Unit) {
-    var progress by remember { mutableFloatStateOf(0f) }
-    val devices = remember { mutableStateListOf<BluetoothDevice>().apply stream@ {
-        thread {
-            threadedBluetoothEnumerator(context, validateDevice,
-                { address, success, current ->
-                    if (success) this@stream += address
-                    progress = maxOf(progress, current)
-                }, {}
-            )
-        }
-    } }
+fun ReceiverBluetoothDeviceSelector(context: Context, onSelect: (BluetoothDevice) -> Unit) {
+    val devices = (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter.bondedDevices.toList().also {
+        Log.d("ReceiverBluetoothDeviceSelector", "Found ${it.size} devices.)")
+    }
     Column(
         modifier = Modifier
             .padding(start = 30.dp, top = 60.dp, end = 30.dp, bottom = 30.dp)
@@ -58,7 +52,7 @@ fun ReceiverBluetoothDeviceSelector(context: Context, validateDevice: (Bluetooth
             fontSize = TextUnit(8f, TextUnitType.Em)
         )
         LinearProgressIndicator(
-            progress = { progress },
+            progress = { 1f },
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier

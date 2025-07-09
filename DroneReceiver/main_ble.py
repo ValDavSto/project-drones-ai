@@ -127,7 +127,7 @@ signal.signal(signal.SIGTERM, lambda signum, frame: close_servers([server, local
 # GPIO setup
 magnet = gpiozero.LED(23)
 
-def localMessageLoop(pipe: socket):
+def localMessageLoop(getPipe):
     """
     Pipe from local to global
     """
@@ -137,7 +137,8 @@ def localMessageLoop(pipe: socket):
             print(f"Local connection from {localClientAddress} has been established.")
             try:
                 while True:
-                    pipe.sendall(receive_bytes(localClient, 1))
+                    print("fwd_bytes")
+                    getPipe().sendall(receive_bytes(localClient, 1))
             except Exception as localError:
                 print(localError)
                 print(f"Local Connection to {localClientAddress} has been closed.")
@@ -149,11 +150,14 @@ def localMessageLoop(pipe: socket):
 # Main loop to accept and handle client connections
 while True:
     client, clientAddress = server.accept()
-    loop: threading.Thread | None = None
+    loop = None
     print(f"Connection from {clientAddress} has been established.")
+    def getPipe():
+        global client
+        return client
     try:
         acknowledge_client(client)
-        loop = threading.Thread(target=localMessageLoop, args = (client,), daemon=True).start()
+        loop = threading.Thread(target=localMessageLoop, args = (getPipe,), daemon=True).start()
         while True:
             opcode = receive_bytes(client, 1)[0]
             if opcode == Action.DISCONNECT.value:
@@ -173,6 +177,5 @@ while True:
         print(f"Connection to {clientAddress} has been closed.")
         time.sleep(1)
         client.close()
-        local.close()
         if loop:
             loop.join()

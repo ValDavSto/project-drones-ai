@@ -1,8 +1,8 @@
 from socket import socket, AF_INET, SOCK_STREAM
 
-s: socket | None = None
+s = None
 
-def getOrConnectLocalSocket(hostname: str = "127.0.0.1", port: int = 4242) -> socket:
+def getOrConnectLocalSocket(hostname: str = "127.0.0.1", port: int = 4242, reconnect: bool = False) -> socket:
     """
     Establishes a connection to a local socket server or returns an existing connection.
     Args:
@@ -28,4 +28,7 @@ def sendMessage(msg: str):
     data = msg.encode(encoding="utf-8")
     if not 0 < len(data) < (1 << 16):
         raise ValueError('Message may not be empty or larger than 1<<16 bytes.')
-    getOrConnectLocalSocket().sendall(len(data).to_bytes(2, byteorder='big', signed=False) + data)
+    try:
+        getOrConnectLocalSocket().sendall(len(data).to_bytes(2, byteorder='big', signed=False) + data)
+    except ConnectionError:
+        getOrConnectLocalSocket(reconnect=True).sendall(len(data).to_bytes(2, byteorder='big', signed=False) + data)

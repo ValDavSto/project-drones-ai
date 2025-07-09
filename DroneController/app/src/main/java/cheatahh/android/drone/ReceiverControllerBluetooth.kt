@@ -2,10 +2,12 @@ package cheatahh.android.drone
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -44,13 +46,15 @@ class ReceiverControllerBluetooth : ComponentActivity() {
     @SuppressLint("MissingPermission")
     private fun connect() {
         disconnect()
-        val address = Address(requireNotNull(intent.extras?.getString(RECEIVER_ADDRESS)))
+        val address = requireNotNull(intent.extras?.getString(RECEIVER_ADDRESS))
         try {
             val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-            val device = bluetoothManager.adapter.bondedDevices.first { it.address == address.value }
-            socket = device.createRfcommSocketToServiceRecord(SPP_UUID)
+            val device = bluetoothManager.adapter.getRemoteDevice(address)
+            val method = device.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
+            socket = method.invoke(device, 1) as BluetoothSocket
             val socket = socket!!
             socket.connect()
+            Log.d("ReceiverControllerBluetooth", "Connected to receiver at $address")
             require(socketAcknowledge(socket))
             socketState.intValue = 1
             loadingState.intValue = 0
@@ -66,8 +70,9 @@ class ReceiverControllerBluetooth : ComponentActivity() {
                     }
                 } catch (_: Exception) {}
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             disconnect()
+            Log.e("ReceiverControllerBluetooth", "Failed to connect to receiver at $address", e)
             socketState.intValue = 2
         }
     }

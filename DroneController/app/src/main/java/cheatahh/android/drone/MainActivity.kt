@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
-import cheatahh.android.drone.network.getBluetoothDevice
 import cheatahh.android.drone.network.getHotspotDevice
 import cheatahh.android.drone.receiver.addressAcknowledge
 import cheatahh.android.drone.receiver.addressSequence24
@@ -26,7 +25,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             DroneControllerTheme {
                 if(CONNECT_BLUETOOTH)
-                    ReceiverBluetoothDeviceSelector(this@MainActivity, { device -> getBluetoothDevice(device, ::addressAcknowledge) }) { device ->
+                    ReceiverBluetoothDeviceSelector(this@MainActivity) { device ->
                         startActivity(Intent(baseContext, ReceiverControllerBluetooth::class.java).putExtra(ReceiverControllerBluetooth.Intents.RECEIVER_ADDRESS, device.address))
                     }
                 else
