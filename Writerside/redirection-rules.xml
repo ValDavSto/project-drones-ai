@@ -14,4 +14,8 @@
         <description>Created after removal of "Hardware" from Drone Project</description>
         <accepts>Hardware.html</accepts>
     </rule>
+    <rule id="26d43be6">
+        <description>Created after removal of "Power Supply" from Drone Project</description>
+        <accepts>Power-Supply.html</accepts>
+    </rule>
 </rules>

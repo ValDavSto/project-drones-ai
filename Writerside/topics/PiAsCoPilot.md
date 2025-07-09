@@ -31,9 +31,8 @@ To establish communication between the Raspberry Pi and the flight controller, c
 
 Ensure the Pi is properly powered from the drone's power system.
 
-> See [](Power-Supply.md) for information on safely powering the Raspberry Pi.
 
----
+
 
 ## Software Architecture
 
