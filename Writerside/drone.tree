@@ -4,13 +4,8 @@
 
 <instance-profile id="drone"
                  name="Drone Project"
-                 start-page="CoralTPU.md">
+                 start-page="Home.md">
 
-    <toc-element topic="Object-Detection.md">
-        <toc-element topic="Red-Object-Detection-Code.md"/>
-        <toc-element topic="Object-Detection-Code.md"/>
-        <toc-element topic="Camera.md"/>
-    </toc-element>
     <toc-element topic="Hardware.md"/>
     <toc-element topic="Autostart.md"/>
     <toc-element topic="Power-Supply.md"/>
@@ -20,4 +15,10 @@
     <toc-element topic="Magnet-Control-Code.md"/>
     <toc-element topic="PiAsCoPilot.md"/>
     <toc-element topic="BetaflightSetup.md"/>
+    <toc-element topic="Object-Detection.md">
+        <toc-element topic="Red-Object-Detection-Code.md"/>
+        <toc-element topic="Object-Detection-Code.md"/>
+        <toc-element topic="Camera.md"/>
+    </toc-element>
+    <toc-element topic="Home.md"/>
 </instance-profile>

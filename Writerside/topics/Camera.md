@@ -2,8 +2,8 @@
 
 <table>
 <tr>
-  <td><img src="camera_front.jpg" alt="Front side of the camera" width="100%"/></td>
-  <td><img src="camera_back.jpg" alt="Back side of the camera" width="100%"/></td>
+  <td><img src="camera_front.jpg" alt="Front side of the camera"/></td>
+  <td><img src="camera_back.jpg" alt="Back side of the camera"/></td>
 </tr>
 <tr>
   <td colspan="2" align="center"><em>Front and back views of the RB-Camera JT-v2-120 used in this setup</em></td>

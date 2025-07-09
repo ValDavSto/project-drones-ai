@@ -84,9 +84,9 @@ class Action(enum.Enum):
 ```
 
 * Defines valid commands the server can interpret:
-0. Disconnect
-1. Activate magnet (pick)
-2. Deactivate magnet (drop)
+- #0 - Disconnect
+- #1 - Activate magnet (pick)
+- #2 - Deactivate magnet (drop)
 
 ## GPIO Control
 ```python
@@ -125,3 +125,7 @@ while True:
     - Package Pick (1): Activates magnet.
     - Package Drop (2): Deactivates magnet.
     - Unknown codes raise an error.
+
+## Architecture Diagram
+
+<img border-effect="rounded" src="architecture.png" alt="Project poster."/>
