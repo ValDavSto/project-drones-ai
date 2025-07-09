@@ -52,8 +52,6 @@ Additional components are necessary to add AI capabilities to the drone:
 - **TPU Accelerator [Google Coral TPU USB Accelerator](https://coral.ai/products/accelerator)**:
   - To enhance the Raspberry Pi's processing power for AI applications, the Google Coral is used.
     Connected via USB, it gives the Pi a performance boost, making it feasible for real-time operations.
-- **[Step Down Buck Converter](https://www.amazon.de/Konverter-Einstellbarer-Spannungsregler-Converter-Adjustable/dp/B0DPM9FDV3/?_encoding=UTF8&pd_rd_w=WN2Wp&content-id=amzn1.sym.8992a918-7136-40dd-be86-a27cde0e1b99%3Aamzn1.symc.9b8fba90-e74e-4690-b98f-edc36fe735a6&pf_rd_p=8992a918-7136-40dd-be86-a27cde0e1b99&pf_rd_r=ZCB79RSTXXWKGF268DFE&pd_rd_wg=ufe1L&pd_rd_r=739581d0-2789-4094-b340-515096f8fa2b&ref_=pd_hp_d_btf_ci_mcx_mr_ca_id_hp_d)**
-  - To be able to power the Raspberry Pi via the 9V connection of the FC a buck step-down converter is required.
 
 ### Components for Package delivering
 To be able to deliver small packages with the drone, additional components are necessary:
@@ -78,9 +76,15 @@ Once soldering is complete, connect the FC and ESC using the provided cable.
 The camera, ELRS receiver, GPS module, video transmitter, and Raspberry Pi are soldered to the flight controller.
 When soldering some components, it is important to note that the cables for UART communications (RX/TX) must be crossed.
 For example, the RX of the ELRS receiver must be connected to the corresponding TX pin on the FC, and the TX pin of the receiver must be connected to the RX pin on the FC.
-<img border-effect="rounded" src="soldering_fc_complete.jpg" alt="Picture of soldering plan for the FC" />
+> In this version of the soldering plan, the Raspberry Pi is connected to the FC via pins. During testing, we could send data to the FC, but could not receive any.
+Alternatively, the Raspberry Pi can be connected to the FC via the USB-C port and use MSP without any issues. This setup requires an additional USB hub because the Raspberry Pi Zero only has one micro USB port for communication.
+Two would be needed for the Coral and the FC.
+> 
+<img border-effect="rounded" src="soldering_fc_wo_buck.jpg" alt="Picture of soldering plan for the FC" />
 The relay and electromagnet shown in the soldering plan are only necessary if the drone is capable of transporting small packages.
-The green OSD cable of the camera is also only necessary if the camera modes can be changed via the remote.
+According to the soldering plan, both the Raspberry Pi's 5V and the relay are soldered to the same 5V pin on the FC. In this case, it is recommended that you use a breakout board.
+
+
 
 ### Soldering plan Electronic Speed Controller
 To solder the motors, solder the three cables to the ESC. It is important to solder the motors in the order in which they are placed on the frame.
@@ -101,3 +105,4 @@ This is a tight fit because the FC stack is usually placed in the center of the 
 This creates enough space in the center of the frame to place the Raspberry Pi and Coral on top of each other.
 The frame remains stable, and we experienced no issues with its stability.
 <img border-effect="rounded" src="frame_mod.jpg" alt="Picture of frame modification for Raspberry Pi" />
+
