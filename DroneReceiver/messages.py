@@ -12,7 +12,7 @@ def getOrConnectLocalSocket(hostname: str = "127.0.0.1", port: int = 4242, recon
         socket: The connected socket instance.
     """
     global s
-    if not s:
+    if not s or reconnect:
         s = socket(AF_INET, SOCK_STREAM)
         s.connect((hostname, port))
     return s

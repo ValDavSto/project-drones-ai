@@ -36,13 +36,6 @@ def create_bluetooth_server() -> BluetoothSocket:
     port = srv.getsockname()[1]
     print(f"Bluetooth server started on RFCOMM port {port}")
 
-    # Make service discoverable
-    advertise_service(
-        srv,
-        "DroneUASService",
-        service_classes=[SERIAL_PORT_CLASS],
-        profiles=[SERIAL_PORT_PROFILE]
-    )
     return srv
 
 def close_servers(srv: list[socket]) -> None:
