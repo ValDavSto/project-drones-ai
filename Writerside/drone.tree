@@ -6,6 +6,7 @@
                  name="Drone Project"
                  start-page="Home.md">
 
+    <toc-element topic="Bluetooth.md"/>
     <toc-element topic="Home.md"/>
     <toc-element topic="Hardware.md"/>
     <toc-element topic="BetaflightSetup.md"/>
