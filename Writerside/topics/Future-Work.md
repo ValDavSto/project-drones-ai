@@ -17,4 +17,6 @@ Additionally, the hardware for the electromagnet could be designed in a more com
 The same issue applies to mounting the camera for image recognition, as the drone is supposed to have vision underneath.
 There is currently no good mounting option for the camera.
 
- 
+### Autopilot
+The current autopilot behavior still needs improvement. We didn't fully test if it actually flies stable, moves forward, or turns as intended.
+With more time, a smarter system could be implemented – for example, flying around to search for a package, steering toward it, and picking it up automatically.
