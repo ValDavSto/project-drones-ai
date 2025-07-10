@@ -10,13 +10,13 @@ The Raspberry Pi serves as an auxiliary flight control unit that interacts with 
 
 There are two main operational modes:
 
-- **Stable Hover Mode** (`AUX3: 1300–1800`):  
-  In this mode, the Pi takes over the control sticks to maintain a level and stable hover. It continuously sends neutral control values to keep the drone steady.
-
-- **Object Detection Mode** (`AUX3: 1800–2100`):  
-  The Pi initiates forward motion and simultaneously performs object detection. Based on the detected object's color, it steers the drone:
-  - **Red object** → slight turn to the **left**
-  - **Blue object** → slight turn to the **right**
+- **Stable Hover & Object Detection Mode** (`AUX3: 1300–1800`):  
+  In this mode, the Pi takes control of the flight sticks to maintain a stable and level hover. It continuously sends neutral RC values to keep the drone steady in the air.
+  At the same time, it scans for red objects using the onboard camera, as described in [Red Object Detection](Red-Object-Detection-Code.md).
+  If a red object is detected, the Pi rotates the drone either to the left or right to align with the object. Since the Pi Cam is downward-facing, this turning motion can help position the drone precisely over the target — for example, to pick up a package using the attached magnet.
+- 
+- **Forward Flying Mode** (`AUX3: 1800–2100`):  
+  In this mode, the Pi commands a slight forward motion by adjusting the pitch input. This enables the drone to move ahead while still maintaining stability.
 
 > For configuration details, refer to [](BetaflightSetup.md), which explains how to enable MSP Override mode.
 
@@ -44,8 +44,8 @@ The core logic revolves around continuously monitoring the AUX channels to deter
 
 - **AUX3** (Mode Selector):
   - **< 1300**: MSP Override is off – the Pi remains inactive.
-  - **1300–1800**: Stable mode – the Pi maintains the drone’s current position.
-  - **> 1800**: Object detection mode – the Pi commands forward motion and reacts to visual input.
+  - **1300–1800**: Stable and Object Detection Mode – the Pi maintains the drone’s current position and scans for red objects.
+  - **> 1800**: Flying Forward Mode – the Pi commands a slight forward motion.
 
 - **AUX5**: Activates the magnet (e.g., to pick up a package).
 - **AUX6**: Deactivates the magnet (e.g., to release a package).
@@ -70,7 +70,17 @@ This module encodes MSP packets with proper binary formatting and checksum valid
 
 Through this abstraction, the Raspberry Pi can behave like a secondary flight controller that only overrides inputs when allowed by the MSP Override switch.
 
----
+If `send_rc` is used, only the four primary flight control inputs — roll, pitch, yaw, and throttle — can be manipulated. This is because in the [Betaflight Setup](BetaflightSetup.md), we set the `msp_override_channels_mask` to `15`, which corresponds to the binary value `0000000000001111`. 
+Each bit in this 16-bit mask represents one RC channel, starting with bit `0 = roll`, `bit 1 = pitch`, `bit 2 = yaw`, `bit 3 = throttle`, and so on up to channel `15` (e.g., AUX channels).
+
+Setting the mask to `15` (`0b1111`) enables override control only for these first four channels. If you want to override additional channels — for example, AUX3 — you need to set the corresponding bit to `1` as well. In this case, the mask would become `79` (`0b01001111`), allowing control over roll, pitch, yaw, throttle and AUX3.
+
+To summarize:
+`15` (binary `0000000000001111`) → Only channels 0–3 (roll, pitch, yaw, throttle) are overridden.
+`79` (binary `0000000001001111`) → Channels 0–3 and channel 6 (AUX3) are overridden.
+
+You can customize the `msp_override_channels_mask` by setting the corresponding bits for each channel you want to control from the Pi.
+
 
 ## Co-Pilot Flight Logic
 
