@@ -34,7 +34,7 @@ def main():
         throttle_before = 1000
         check_stable = True
         check_forward = True
-        MAX_COUNT = 20
+        MAX_COUNT = 40
         count = MAX_COUNT
         direction = False # False-> left, True -> right
 
